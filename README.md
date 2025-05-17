@@ -189,3 +189,119 @@ SELECT FamilyMembers.status, FamilyMembers.member_name, SUM(Payments.unit_price 
 WHERE GoodTypes.good_type_name = 'entertainment'
 GROUP BY FamilyMembers.member_name, FamilyMembers.status
 ```
+
+## Задание 21
+
+Определить товары, которые покупали более 1 раза
+```sql
+SELECT Goods.good_name FROM Goods
+    INNER JOIN Payments ON Payments.good = Goods.good_id
+GROUP BY Goods.good_name
+HAVING COUNT(Payments.good) > 1
+```
+
+## Задание 22
+
+Найти имена всех матерей (mother)
+```sql
+SELECT member_name FROM FamilyMembers
+WHERE status = 'mother'
+```
+
+## Задание 23
+
+Найдите самый дорогой деликатес (delicacies) и выведите его цену
+```sql
+SELECT Goods.good_name, Payments.unit_price FROM Goods
+    INNER JOIN Payments ON Payments.good = Goods.good_id
+    INNER JOIN GoodTypes ON Goods.type = GoodTypes.good_type_id
+WHERE good_type_name = 'delicacies'
+LIMIT 1
+```
+
+## Задание 24
+
+Определить кто и сколько потратил в июне 2005
+```sql
+SELECT FamilyMembers.member_name, SUM(Payments.amount * Payments.unit_price) as costs FROM FamilyMembers
+    LEFT JOIN Payments ON FamilyMembers.member_id = Payments.family_member
+WHERE YEAR(Payments.date) = '2005' AND MONTH(Payments.date) = '06'
+GROUP BY FamilyMembers.member_name
+```
+
+## Задание 25
+
+Определить, какие товары не покупались в 2005 году
+```sql
+SELECT DISTINCT good_name FROM Goods
+WHERE good_name NOT IN (
+		SELECT good_name FROM Payments
+			INNER JOIN Goods ON good = good_id
+		WHERE date LIKE '2005%')
+```
+
+## Задание 26
+
+Определить группы товаров, которые не приобретались в 2005 году
+```sql
+SELECT DISTINCT good_type_name FROM GoodTypes
+    WHERE good_type_name NOT IN (
+        SELECT GoodTypes.good_type_name FROM GoodTypes
+            INNER JOIN Goods ON GoodTypes.good_type_id = Goods.type
+            INNER JOIN Payments ON Goods.good_id = Payments.good
+        WHERE YEAR(Payments.date) = 2005)
+```
+
+## Задание 27
+
+Узнайте, сколько было потрачено на каждую из групп товаров в 2005 году. Выведите название группы и потраченную на неё сумму. Если потраченная сумма равна нулю, т.е. товары из этой группы не покупались в 2005 году, то не выводите её.
+```sql
+SELECT good_type_name, SUM(Payments.amount * Payments.unit_price) as costs FROM GoodTypes
+    INNER JOIN Goods ON Goods.type = GoodTypes.good_type_id
+    INNER JOIN Payments ON Payments.good = Goods.good_id
+WHERE YEAR(Payments.date) = 2005
+GROUP BY good_type_name
+```
+
+## Задание 28
+
+Сколько рейсов совершили авиакомпании из Ростова (Rostov) в Москву (Moscow) ?
+```sql
+SELECT COUNT(*) as count FROM Trip
+WHERE town_from = 'Rostov' AND town_to = 'Moscow'
+```
+
+## Задание 29
+
+Выведите имена пассажиров улетевших в Москву (Moscow) на самолете TU-134. В ответе не должно быть дубликатов.
+```sql
+SELECT DISTINCT Passenger.name FROM Passenger
+    INNER JOIN Pass_in_trip ON Passenger.id = Pass_in_trip.passenger
+    INNER JOIN Trip ON Trip.id = Pass_in_trip.trip
+WHERE Trip.plane = 'TU-134' AND Trip.town_to = 'Moscow'
+```
+
+## Задание 30
+
+Выведите нагруженность (число пассажиров) каждого рейса (trip). Результат вывести в отсортированном виде по убыванию нагруженности.
+```sql
+SELECT COUNT(passenger) as count, trip FROM Pass_in_trip
+GROUP BY trip
+ORDER BY count DESC
+```
+
+## Задание 31
+
+Вывести всех членов семьи с фамилией Quincey.
+```sql
+SELECT * FROM FamilyMembers
+WHERE member_name LIKE '%Quincey'
+```
+
+## Задание 32
+
+Вывести средний возраст людей (в годах), хранящихся в базе данных. Результат округлите до целого в меньшую сторону.
+```sql
+SELECT FLOOR(AVG(TIMESTAMPDIFF(YEAR, birthday, CURRENT_TIMESTAMP))) AS age
+FROM FamilyMembers;
+```
