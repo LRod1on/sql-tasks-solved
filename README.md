@@ -131,3 +131,61 @@ SELECT Trip.time_in, Passenger.id FROM Trip
 	INNER JOIN Passenger ON Pass_in_trip.passenger = Passenger.id
 WHERE Passenger.name = 'Steve Martin' AND Trip.town_to = 'London'
 ```
+
+## Задание 16
+
+Вывести отсортированный по количеству перелетов (по убыванию) и имени (по возрастанию) список пассажиров, совершивших хотя бы 1 полет.
+```sql
+SELECT Passenger.name, COUNT(passenger) as count FROM Passenger
+    INNER JOIN Pass_in_trip ON Pass_in_trip.passenger = Passenger.id
+GROUP BY Passenger.name  
+ORDER BY count DESC, name ASC
+```
+
+
+## Задание 17
+
+Определить, сколько потратил в 2005 году каждый из членов семьи. В результирующей выборке не выводите тех членов семьи, которые ничего не потратили.
+```sql
+SELECT FamilyMembers.member_name,
+	FamilyMembers.status,
+	SUM(Payments.unit_price * Payments.amount) AS costs
+FROM FamilyMembers
+	INNER JOIN Payments ON Payments.family_member = FamilyMembers.member_id
+WHERE YEAR(Payments.date) = 2005
+GROUP BY FamilyMembers.member_name, FamilyMembers.status
+```
+
+## Задание 18
+
+Выведите имя самого старшего человека. Если таких несколько, то выведите их всех.
+```sql
+SELECT member_name FROM FamilyMembers
+WHERE birthday = (
+		SELECT MIN(birthday)
+		FROM FamilyMembers
+	)
+```
+
+## Задание 19
+
+Определить, кто из членов семьи покупал картошку (potato)
+```sql
+SELECT FamilyMembers.status FROM FamilyMembers
+    INNER JOIN Payments ON FamilyMembers.member_id = Payments.family_member
+    INNER JOIN Goods ON Goods.good_id = Payments.good
+WHERE Goods.good_name = 'potato'
+GROUP BY status
+```
+
+## Задание 20
+
+Сколько и кто из семьи потратил на развлечения (entertainment). Вывести статус в семье, имя, сумму
+```sql
+SELECT FamilyMembers.status, FamilyMembers.member_name, SUM(Payments.unit_price * Payments.amount) as costs FROM FamilyMembers
+    INNER JOIN Payments ON Payments.family_member = FamilyMembers.member_id
+    INNER JOIN Goods ON Goods.good_id = Payments.good
+    INNER JOIN GoodTypes ON GoodTypes.good_type_id = Goods.type
+WHERE GoodTypes.good_type_name = 'entertainment'
+GROUP BY FamilyMembers.member_name, FamilyMembers.status
+```
