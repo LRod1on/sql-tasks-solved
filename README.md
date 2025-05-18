@@ -305,3 +305,185 @@ WHERE member_name LIKE '%Quincey'
 SELECT FLOOR(AVG(TIMESTAMPDIFF(YEAR, birthday, CURRENT_TIMESTAMP))) AS age
 FROM FamilyMembers;
 ```
+
+## Задание 33
+
+Найдите среднюю цену икры на основе данных, хранящихся в таблице Payments. В базе данных хранятся данные о покупках красной (red caviar) и черной икры (black caviar). В ответе должна быть одна строка со средней ценой всей купленной когда-либо икры.
+```sql
+SELECT AVG(Payments.unit_price) as cost FROM Payments
+    INNER JOIN Goods ON Payments.good = Goods.good_id
+WHERE good_name IN ('red caviar', 'black caviar')
+```
+
+## Задание 34
+
+Сколько всего 10-ых классов
+```sql
+SELECT COUNT(name) as count FROM Class
+WHERE name LIKE '10%'
+```
+
+## Задание 35
+
+Сколько различных кабинетов школы использовались 2 сентября 2019 года для проведения занятий?
+```sql
+SELECT COUNT(DISTINCT classroom) as count FROM Schedule
+WHERE YEAR(date) = 2019 AND MONTH(date) = 09 AND DAY(date) = 2
+```
+
+## Задание 36
+
+Выведите информацию об обучающихся живущих на улице Пушкина (ul. Pushkina)?
+```sql
+SELECT * FROM Student
+WHERE address LIKE 'ul. Pushkina%'
+```
+
+## Задание 37
+
+Сколько лет самому молодому обучающемуся ?
+```sql
+SELECT TIMESTAMPDIFF(YEAR, MAX(birthday), NOW()) as year FROM Student
+```
+
+## Задание 38
+
+Сколько Анн (Anna) учится в школе ?
+```sql
+SELECT COUNT(first_name) as count FROM Student
+WHERE first_name LIKE 'Anna'
+```
+
+## Задание 39
+
+Сколько обучающихся в 10 B классе ?
+```sql
+SELECT COUNT(Student_in_class.class) AS count FROM Student_in_class
+    INNER JOIN Class ON Class.id = Student_in_class.class
+WHERE Class.name LIKE "10 B"
+```
+
+## Задание 40
+
+Выведите название предметов, которые преподает Ромашкин П.П. (Romashkin P.P.). Обратите внимание, что в базе данных есть несколько учителей с такой фамилией.
+```sql
+SELECT Subject.name AS subjects FROM Subject
+    INNER JOIN Schedule ON Schedule.subject = Subject.id
+    INNER JOIN Teacher ON Schedule.teacher = Teacher.id
+WHERE Teacher.first_name LIKE 'P%' AND Teacher.middle_name LIKE 'P%' AND Teacher.last_name = 'Romashkin'
+```
+
+## Задание 41
+
+Выясните, во сколько по расписанию начинается четвёртое занятие.
+```sql
+SELECT start_pair FROM Timepair
+WHERE id = 4
+```
+
+## Задание 42
+
+Сколько времени обучающийся будет находиться в школе, учась со 2-го по 4-ый уч. предмет?
+```sql
+SELECT TIMEDIFF((
+		SELECT end_pair
+		FROM Timepair
+		WHERE id = 4
+		),(
+		SELECT start_pair
+		FROM Timepair
+		WHERE id = 2
+		)
+) AS time
+```
+
+## Задание 43
+
+Выведите фамилии преподавателей, которые ведут физическую культуру (Physical Culture). Отсортируйте преподавателей по фамилии в алфавитном порядке.
+```sql
+SELECT Teacher.last_name FROM Teacher
+    INNER JOIN Schedule ON Schedule.teacher = Teacher.id
+    INNER JOIN Subject ON Subject.id = Schedule.subject
+WHERE Subject.name = 'Physical Culture'
+ORDER BY last_name ASC
+```
+
+## Задание 44
+
+Найдите максимальный возраст (количество лет) среди обучающихся 10 классов на сегодняшний день. Для получения текущих даты и времени используйте функцию NOW().
+```sql
+SELECT MAX(TIMESTAMPDIFF(YEAR, Student.birthday, NOW())) as max_year FROM Student
+    INNER JOIN Student_in_class ON Student_in_class.student = Student.id 
+    INNER JOIN Class ON Class.id = Student_in_class.class
+WHERE Class.name LIKE "10%"
+```
+
+## Задание 46
+
+В каких классах введет занятия преподаватель "Krauze" ?
+```sql
+SELECT DISTINCT Class.name FROM Class
+    INNER JOIN Schedule ON Schedule.class = Class.id
+    INNER JOIN Teacher ON Teacher.id = Schedule.teacher
+WHERE Teacher.last_name = 'Krauze'
+```
+
+## Задание 47
+
+Сколько занятий провел Krauze 30 августа 2019 г.?
+```sql
+SELECT COUNT(Schedule.teacher) as count FROM Schedule
+    INNER JOIN Teacher ON Teacher.id = Schedule.teacher
+WHERE YEAR(Schedule.date) = 2019 AND MONTH(Schedule.date) = 08 AND DAY(Schedule.date) = 30 AND Teacher.last_name = 'Krauze'
+```
+
+## Задание 48
+
+Выведите заполненность классов в порядке убывания
+```sql
+SELECT Class.name, COUNT(Class.name) as count FROM Class
+    INNER JOIN Student_in_class ON Class.id = Student_in_class.class
+GROUP BY Class.name
+ORDER BY count DESC
+```
+
+## Задание 49
+
+Какой процент обучающихся учится в "10 A" классе? Выведите ответ в диапазоне от 0 до 100 с округлением до четырёх знаков после запятой, например, 96.0201.
+```sql
+SELECT
+    ROUND((SELECT(COUNT(Student_in_class.student)) FROM Student_in_class
+        INNER JOIN Class ON Class.id = Student_in_class.class
+        WHERE Class.name = '10 A') /
+    (SELECT(COUNT(Student_in_class.student)) FROM Student_in_class)
+    * 100, 4) as percent
+```
+
+## Задание 50
+
+Какой процент обучающихся родился в 2000 году? Результат округлить до целого в меньшую сторону.
+```sql
+SELECT 
+    FLOOR((SELECT COUNT(Student_in_class.student) FROM Student_in_class
+        INNER JOIN Student ON Student_in_class.student = Student.id
+    WHERE YEAR(Student.birthday) = 2000) /
+    (SELECT COUNT(Student_in_class.student) FROM Student_in_class)
+    * 100)
+AS percent
+```
+
+## Задание 51
+
+Добавьте товар с именем "Cheese" и типом "food" в список товаров (Goods).
+```sql
+INSERT INTO Goods (good_id, good_name, type) 
+VALUES (19, "Cheese", 2)
+```
+
+## Задание 52
+
+Добавьте в список типов товаров (GoodTypes) новый тип "auto".
+```sql
+INSERT INTO GoodTypes (good_type_id, good_type_name)
+VALUES (9, "auto")
+```
